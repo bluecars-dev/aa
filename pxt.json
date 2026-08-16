@@ -1,16 +1,14 @@
 {
-    "name": "aa",
-    "description": "",
+    "name": "TinybitWithIR",
+    "version": "1.0.0",
+    "description": "Consolidated Tinybit and IR Extension",
     "dependencies": {
         "core": "*",
-        "neopixel": "github:microsoft/pxt-neopixel#master",
-        "radio": "*",
-        "microphone": "*"
+        "neopixel": "github:microsoft/pxt-neopixel#master"
     },
     "files": [
-        "main.blocks",
-        "main.ts",
-        "README.md"
+        "README.md",
+        "main.ts"
     ],
     "testFiles": [
         "test.ts"
