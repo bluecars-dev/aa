@@ -10,7 +10,6 @@ namespace Tinybit {
     const MOTOR_REG = 0x02;
     const RGB_REG = 0x01;
 
-    // Hardware Deadband Limits: 50 is the lowest PWM where motors actually spin.
     const MIN_PWM = 50; 
     const MAX_PWM = 255;
 
@@ -89,9 +88,6 @@ namespace Tinybit {
         Car_Stop = 5
     }
 
-    /**
-     * Maps a 0-100% speed value to the usable PWM range, bypassing motor stall zones.
-     */
     function calculateUsablePWM(percent: number): number {
         if (percent === 0) return 0;
         percent = Math.clamp(-100, 100, percent);
@@ -101,9 +97,9 @@ namespace Tinybit {
         return isNegative ? -Math.round(pwm) : Math.round(pwm);
     }
 
+    //% blockId="tinybit_car_sport"
     //% block="set left motor %sp_L \\% right motor %sp_R \\%"
-    //% tooltip="Directly control the speed of left and right motors (-100% to 100%)."
-    //% color="#006400" weight=87 blockGap=10
+    //% weight=87 blockGap=10
     //% sp_L.min=-100 sp_L.max=100 sp_R.min=-100 sp_R.max=100
     export function car_sport(sp_L: number, sp_R: number): void {
         let leftPWM = calculateUsablePWM(sp_L);
@@ -111,20 +107,18 @@ namespace Tinybit {
 
         bufMotor[0] = MOTOR_REG;
 
-        // Left motor
         if (leftPWM < 0) { bufMotor[1] = 0; bufMotor[2] = Math.abs(leftPWM); } 
         else { bufMotor[1] = leftPWM; bufMotor[2] = 0; }
 
-        // Right motor
         if (rightPWM < 0) { bufMotor[3] = 0; bufMotor[4] = Math.abs(rightPWM); } 
         else { bufMotor[3] = rightPWM; bufMotor[4] = 0; }
 
         pins.i2cWriteBuffer(PWM_ADD, bufMotor);
     }
 
+    //% blockId="tinybit_car_ctrl_speed"
     //% block="car move %index at %speed \\% speed"
-    //% tooltip="Move the car in a specific direction at a percentage speed (0-100%)."
-    //% weight=92 blockGap=10 speed.min=0 speed.max=100 color="#006400"
+    //% weight=92 blockGap=10 speed.min=0 speed.max=100
     export function CarCtrlSpeed(index: CarState, speed: number): void {
         switch (index) {
             case CarState.Car_Run: car_sport(speed, speed); break;
@@ -145,8 +139,9 @@ namespace Tinybit {
         pins.i2cWriteBuffer(PWM_ADD, bufRGB);
     }
 
+    //% blockId="tinybit_rgb_car_program"
     //% block="Tinybit NeoPixel LEDs"
-    //% weight=99 blockGap=10 color="#006400"
+    //% weight=99 blockGap=10
     export function RGB_Car_Program(): neopixel.Strip {
         if (!yahStrip) {
             yahStrip = neopixel.create(DigitalPin.P12, 2, NeoPixelMode.RGB);
@@ -154,8 +149,9 @@ namespace Tinybit {
         return yahStrip;
     }
 
+    //% blockId="tinybit_rgb_car_big"
     //% block="set car LEDs to color %value"
-    //% weight=98 blockGap=10 color="#006400"
+    //% weight=98 blockGap=10
     export function RGB_Car_Big(value: enColor): void {
         switch (value) {
             case enColor.OFF: setPwmRGB(0, 0, 0); break;
@@ -169,17 +165,18 @@ namespace Tinybit {
         }
     }
 
+    //% blockId="tinybit_rgb_car_big2"
     //% block="set car LEDs to R: %r G: %g B: %b"
-    //% weight=97 blockGap=10 color="#006400"
+    //% weight=97 blockGap=10
     //% r.min=0 r.max=255 g.min=0 g.max=255 b.min=0 b.max=255
     export function RGB_Car_Big2(r: number, g: number, b: number): void {
         setPwmRGB(r, g, b);
     }
 
+    //% blockId="tinybit_music_car"
     //% block="play car melody %index"
-    //% weight=95 blockGap=10 color="#006400"
+    //% weight=95 blockGap=10
     export function Music_Car(index: enMusic): void {
-        // Condensed music list for cleaner UI. Feel free to add the others back if you use them.
         let melody = Melodies.Dadadadum;
         switch (index) {
             case enMusic.entertainer: melody = Melodies.Entertainer; break;
@@ -193,9 +190,9 @@ namespace Tinybit {
         music.beginMelody(music.builtInMelody(melody), MelodyOptions.Once);
     }
 
+    //% blockId="tinybit_line_sensor"
     //% block="%direct line sensor detects %value line"
-    //% tooltip="Returns true/false for line tracking logic."
-    //% weight=89 blockGap=10 color="#006400"
+    //% weight=89 blockGap=10
     export function Line_Sensor(direct: enPos, value: enLineState): boolean {
         if (!linePinsInitialized) {
             pins.setPull(DigitalPin.P13, PinPullMode.PullNone);
@@ -206,16 +203,16 @@ namespace Tinybit {
         return pins.digitalReadPin(pin) === value;
     }
 
+    //% blockId="tinybit_voice_sensor"
     //% block="sound sensor volume"
-    //% tooltip="Returns raw analog volume (0-1023)."
-    //% weight=88 blockGap=10 color="#006400"
+    //% weight=88 blockGap=10
     export function Voice_Sensor(): number {
         return pins.analogReadPin(AnalogPin.P1);
     }
 
+    //% blockId="tinybit_ultrasonic_car"
     //% block="ultrasonic distance (cm)"
-    //% tooltip="Optimized, non-blocking ultrasonic ping."
-    //% color="#006400" weight=87 blockGap=10
+    //% weight=87 blockGap=10
     export function Ultrasonic_Car(): number {
         pins.setPull(DigitalPin.P16, PinPullMode.PullNone);
         pins.digitalWritePin(DigitalPin.P16, 0);
@@ -229,10 +226,6 @@ namespace Tinybit {
         return Math.floor(duration / 58);
     }
 }
-
-
-// MakerBit blocks supporting a Keyestudio Infrared Wireless Module Kit
-// (receiver module + remote controller)
 
 const enum IrButton {
     //% block="any"
@@ -407,7 +400,7 @@ namespace makerbit {
         }
 
         irState = {
-            protocol: IrProtocol.Keyestudio, // Updated default to Keyestudio for robust compatibility
+            protocol: IrProtocol.Keyestudio,
             bitsReceived: 0,
             hasNewDatagram: false,
             addressSectionBits: 0,
@@ -524,14 +517,15 @@ namespace makerbit {
 
     function ir_rec_to16BitHex(value: number): string {
         let hex = "";
+        let val = value;
         for (let pos = 0; pos < 4; pos++) {
-            let remainder = value % 16;
+            let remainder = val % 16;
             if (remainder < 10) {
                 hex = remainder.toString() + hex;
             } else {
                 hex = String.fromCharCode(55 + remainder) + hex;
             }
-            value = Math.idiv(value, 16);
+            val = Math.idiv(val, 16);
         }
         return hex;
     }
@@ -548,6 +542,45 @@ namespace makerbit {
         export enum Mode {
             Repeat,
             Once,
+        }
+
+        class Job {
+            id: number;
+            func: () => void;
+            delay: number;
+            remaining: number;
+            mode: Mode;
+
+            constructor(func: () => void, delay: number, mode: Mode) {
+                this.id = randint(0, 2147483647);
+                this.func = func;
+                this.delay = delay;
+                this.remaining = delay;
+                this.mode = mode;
+            }
+
+            run(delta: number): boolean {
+                if (delta <= 0) {
+                    return false;
+                }
+
+                this.remaining -= delta;
+                if (this.remaining > 0) {
+                    return false;
+                }
+
+                switch (this.mode) {
+                    case Mode.Once:
+                        this.func();
+                        basic.pause(0);
+                        return true;
+                    case Mode.Repeat:
+                        this.func();
+                        this.remaining = this.delay + this.remaining;
+                        basic.pause(0);
+                        return false;
+                }
+            }
         }
 
         class Executor {
@@ -613,46 +646,6 @@ namespace makerbit {
                     }
 
                     basic.pause(this._pause);
-                }
-            }
-        }
-
-        class Job {
-            id: number;
-            func: () => void;
-            delay: number;
-            remaining: number;
-            mode: Mode;
-
-            constructor(func: () => void, delay: number, mode: Mode) {
-                this.id = randint(0, 2147483647);
-                this.func = func;
-                this.delay = delay;
-                this.remaining = delay;
-                this.mode = mode;
-            }
-
-            run(delta: number): boolean {
-                if (delta <= 0) {
-                    return false;
-                }
-
-                this.remaining -= delta;
-                if (this.remaining > 0) {
-                    return false;
-                }
-
-                switch (this.mode) {
-                    case Mode.Once:
-                        this.func();
-                        basic.pause(0);
-                        return true;
-                    case Mode.Repeat:
-                        this.func();
-                        // Fix timer drift by carrying over the overshoot time
-                        this.remaining = this.delay + this.remaining;
-                        basic.pause(0);
-                        return false;
                 }
             }
         }
