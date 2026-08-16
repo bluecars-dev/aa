@@ -400,7 +400,7 @@ namespace makerbit {
         }
 
         irState = {
-            protocol: IrProtocol.Keyestudio,
+            protocol: IrProtocol.NEC,
             bitsReceived: 0,
             hasNewDatagram: false,
             addressSectionBits: 0,
@@ -423,7 +423,7 @@ namespace makerbit {
     //% weight=90
     export function connectIrReceiver(pin: DigitalPin = DigitalPin.P8): void {
         initIrState();
-        irState.protocol = IrProtocol.Keyestudio;
+        irState.protocol = IrProtocol.NEC;
         enableIrMarkSpaceDetection(pin);
         background.schedule(notifyIrEvents, background.Thread.Priority, background.Mode.Repeat, REPEAT_TIMEOUT_MS);
     }
@@ -457,17 +457,6 @@ namespace makerbit {
         } else {
             irState.onIrButtonReleased.push(new IrButtonHandler(button, handler));
         }
-    }
-
-    //% blockId=makerbit_infrared_ir_button_pressed
-    //% block="IR button"
-    //% weight=70
-    export function irButton(): number {
-        basic.pause(0);
-        if (!irState) {
-            return IrButton.Any;
-        }
-        return irState.commandSectionBits >> 8;
     }
 
     //% blockId=makerbit_infrared_on_ir_datagram
@@ -585,13 +574,15 @@ namespace makerbit {
         }
 
         class Executor {
-            _newJobs: Job[] = [];
-            _jobsToRemove: number[] = [];
+            _newJobs: Job[] = undefined;
+            _jobsToRemove: number[] = undefined;
             _pause: number = 100;
             _type: Thread;
 
             constructor(type: Thread) {
                 this._type = type;
+                this._newJobs = [];
+                this._jobsToRemove = [];
                 control.runInParallel(() => this.loop());
             }
 
@@ -617,12 +608,12 @@ namespace makerbit {
                     const delta = now - previous;
                     previous = now;
 
-                    this._newJobs.forEach((job: Job) => {
+                    this._newJobs.forEach(function (job: Job, index: number) {
                         _jobs.push(job);
                     });
                     this._newJobs = [];
 
-                    this._jobsToRemove.forEach((jobId: number) => {
+                    this._jobsToRemove.forEach(function (jobId: number, index: number) {
                         for (let i = _jobs.length - 1; i >= 0; i--) {
                             if (_jobs[i].id == jobId) {
                                 _jobs.removeAt(i);
