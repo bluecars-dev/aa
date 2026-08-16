@@ -417,10 +417,11 @@ namespace makerbit {
 
     //% blockId="makerbit_infrared_connect_receiver"
     //% block="connect IR receiver at pin %pin"
+    //% pin.defl=DigitalPin.P8
     //% pin.fieldEditor="gridpicker"
     //% pin.fieldOptions.tooltips="false"
     //% weight=90
-    export function connectIrReceiver(pin: DigitalPin): void {
+    export function connectIrReceiver(pin: DigitalPin = DigitalPin.P8): void {
         initIrState();
         irState.protocol = IrProtocol.Keyestudio;
         enableIrMarkSpaceDetection(pin);
