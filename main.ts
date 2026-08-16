@@ -1,16 +1,15 @@
 /*
- * Tinybit Extension for micro:bit (Optimized, Non-Blocking, & Bug-Fixed)
+ * Tinybit Extension for micro:bit (Cleaned UI, Accurate Sensors)
  * Copyright (C): 2010-2019, Shenzhen Yahboom Tech
  */
 
-//% color="#006400" weight=20 icon="\uf1b9"
+//% color="#006400" weight=20 icon="\uf1b9" block="Tinybit"
 namespace Tinybit {
 
     const PWM_ADD = 0x01;
     const MOTOR_REG = 0x02;
     const RGB_REG = 0x01;
 
-    // Reuse static I2C buffers to avoid dynamic memory allocation overhead
     const bufMotor = pins.createBuffer(5);
     const bufRGB = pins.createBuffer(4);
 
@@ -37,82 +36,79 @@ namespace Tinybit {
     }
 
     export enum enMusic {
-        //% blockId="dadadum" block="dadadum"
+        //% block="dadadum"
         dadadum = 0,
-        //% blockId="entertainer" block="entertainer"
+        //% block="entertainer"
         entertainer,
-        //% blockId="prelude" block="prelude"
+        //% block="prelude"
         prelude,
-        //% blockId="ode" block="ode"
+        //% block="ode"
         ode,
-        //% blockId="nyan" block="nyan"
+        //% block="nyan"
         nyan,
-        //% blockId="ringtone" block="ringtone"
+        //% block="ringtone"
         ringtone,
-        //% blockId="funk" block="funk"
+        //% block="funk"
         funk,
-        //% blockId="blues" block="blues"
+        //% block="blues"
         blues,
-        //% blockId="birthday" block="birthday"
+        //% block="birthday"
         birthday,
-        //% blockId="wedding" block="wedding"
+        //% block="wedding"
         wedding,
-        //% blockId="funereal" block="funereal"
+        //% block="funereal"
         funereal,
-        //% blockId="punchline" block="punchline"
+        //% block="punchline"
         punchline,
-        //% blockId="baddy" block="baddy"
+        //% block="baddy"
         baddy,
-        //% blockId="chase" block="chase"
+        //% block="chase"
         chase,
-        //% blockId="ba_ding" block="ba_ding"
+        //% block="ba_ding"
         ba_ding,
-        //% blockId="wawawawaa" block="wawawawaa"
+        //% block="wawawawaa"
         wawawawaa,
-        //% blockId="jump_up" block="jump_up"
+        //% block="jump up"
         jump_up,
-        //% blockId="jump_down" block="jump_down"
+        //% block="jump down"
         jump_down,
-        //% blockId="power_up" block="power_up"
+        //% block="power up"
         power_up,
-        //% blockId="power_down" block="power_down"
+        //% block="power down"
         power_down
     }
 
     export enum enPos {
-        //% blockId="LeftState" block="LeftState"
+        //% block="Left"
         LeftState = 0,
-        //% blockId="RightState" block="RightState"
+        //% block="Right"
         RightState = 1
     }
 
     export enum enLineState {
-        //% blockId="White" block="White Line"
+        //% block="White"
         White = 0,
-        //% blockId="Black" block="Black Line"
+        //% block="Black"
         Black = 1
     }
 
     export enum CarState {
-        //% blockId="Car_Run" block="Run"
+        //% block="Run forward"
         Car_Run = 1,
-        //% blockId="Car_Back" block="Back"
+        //% block="Move backward"
         Car_Back = 2,
-        //% blockId="Car_Left" block="Left"
+        //% block="Turn left"
         Car_Left = 3,
-        //% blockId="Car_Right" block="Right"
+        //% block="Turn right"
         Car_Right = 4,
-        //% blockId="Car_Stop" block="Stop"
+        //% block="Stop"
         Car_Stop = 5,
-        //% blockId="Car_SpinLeft" block="SpinLeft"
+        //% block="Spin left"
         Car_SpinLeft = 6,
-        //% blockId="Car_SpinRight" block="SpinRight"
+        //% block="Spin right"
         Car_SpinRight = 7
     }
 
-    /**
-     * Set PWM values for the headlight RGB LED
-     */
     function setPwmRGB(red: number, green: number, blue: number): void {
         bufRGB[0] = RGB_REG;
         bufRGB[1] = Math.clamp(0, 255, red);
@@ -121,10 +117,8 @@ namespace Tinybit {
         pins.i2cWriteBuffer(PWM_ADD, bufRGB);
     }
 
-    /**
-     * Advanced, non-blocking direct motor control with independent PWM limits (-255 to 255)
-     */
-    //% blockId=Tinybit_motor_pid block="Tinybit_motor_pid|motor_left:%sp_L|motor_right:%sp_R"
+    //% block="set left motor %sp_L right motor %sp_R"
+    //% tooltip="Directly control the speed of the left and right motors (-255 to 255)."
     //% color="#006400" weight=87 blockGap=10
     //% sp_L.min=-255 sp_L.max=255 sp_R.min=-255 sp_R.max=255
     export function car_sport(sp_L: number, sp_R: number): void {
@@ -133,28 +127,15 @@ namespace Tinybit {
 
         bufMotor[0] = MOTOR_REG;
 
-        // Left motor setup
-        if (sp_L < 0) {
-            bufMotor[1] = 0;
-            bufMotor[2] = -sp_L;
-        } else {
-            bufMotor[1] = sp_L;
-            bufMotor[2] = 0;
-        }
+        if (sp_L < 0) { bufMotor[1] = 0; bufMotor[2] = -sp_L; } 
+        else { bufMotor[1] = sp_L; bufMotor[2] = 0; }
 
-        // Right motor setup
-        if (sp_R < 0) {
-            bufMotor[3] = 0;
-            bufMotor[4] = -sp_R;
-        } else {
-            bufMotor[3] = sp_R;
-            bufMotor[4] = 0;
-        }
+        if (sp_R < 0) { bufMotor[3] = 0; bufMotor[4] = -sp_R; } 
+        else { bufMotor[3] = sp_R; bufMotor[4] = 0; }
 
         pins.i2cWriteBuffer(PWM_ADD, bufMotor);
     }
 
-    // High-level direction handlers redirect to optimized differential drive
     function Car_run(speed1: number, speed2: number): void { car_sport(speed1, speed2); }
     function Car_back(speed1: number, speed2: number): void { car_sport(-speed1, -speed2); }
     function Car_left(speed1: number, speed2: number): void { car_sport(0, speed2); }
@@ -163,7 +144,8 @@ namespace Tinybit {
     function Car_spinright(speed1: number, speed2: number): void { car_sport(speed1, -speed2); }
     function Car_stop(): void { car_sport(0, 0); }
 
-    //% blockId=Tinybit_RGB_Car_Program block="RGB_Car_Program"
+    //% block="Tinybit NeoPixel LEDs"
+    //% tooltip="Access the programmable RGB LEDs on the car."
     //% weight=99 blockGap=10 color="#006400"
     export function RGB_Car_Program(): neopixel.Strip {
         if (!yahStrip) {
@@ -172,8 +154,9 @@ namespace Tinybit {
         return yahStrip;
     }
 
-    //% blockId=Tinybit_RGB_Car_Big block="RGB_Car_Big|value %value"
-    //% weight=98 blockGap=10
+    //% block="set car LEDs to color %value"
+    //% tooltip="Set the car's headlights to a preset color."
+    //% weight=98 blockGap=10 color="#006400"
     export function RGB_Car_Big(value: enColor): void {
         switch (value) {
             case enColor.OFF: setPwmRGB(0, 0, 0); break;
@@ -187,14 +170,16 @@ namespace Tinybit {
         }
     }
 
-    //% blockId=Tinybit_RGB_Car_Big2 block="RGB_Car_Big2|value1 %value1|value2 %value2|value3 %value3"
-    //% weight=97 blockGap=10
-    //% value1.min=0 value1.max=255 value2.min=0 value2.max=255 value3.min=0 value3.max=255
-    export function RGB_Car_Big2(value1: number, value2: number, value3: number): void {
-        setPwmRGB(value1, value2, value3);
+    //% block="set car LEDs to R: %r G: %g B: %b"
+    //% tooltip="Mix your own color for the headlights using Red, Green, and Blue values (0-255)."
+    //% weight=97 blockGap=10 color="#006400"
+    //% r.min=0 r.max=255 g.min=0 g.max=255 b.min=0 b.max=255
+    export function RGB_Car_Big2(r: number, g: number, b: number): void {
+        setPwmRGB(r, g, b);
     }
 
-    //% blockId=Tinybit_Music_Car block="Music_Car|%index"
+    //% block="play car melody %index"
+    //% tooltip="Play a built-in melody through the car's buzzer."
     //% weight=95 blockGap=10 color="#006400"
     export function Music_Car(index: enMusic): void {
         switch (index) {
@@ -221,19 +206,22 @@ namespace Tinybit {
         }
     }
 
-    //% blockId=Tinybit_CarCtrl block="CarCtrl|%index"
+    //% block="car move %index"
+    //% tooltip="Make the car move in a specific direction at maximum speed."
     //% weight=93 blockGap=10 color="#006400"
     export function CarCtrl(index: CarState): void {
         CarCtrlSpeed(index, 255);
     }
 
-    //% blockId=Tinybit_CarCtrlSpeed block="CarCtrlSpeed|%index|speed %speed"
+    //% block="car move %index at speed %speed"
+    //% tooltip="Make the car move in a specific direction at a set speed."
     //% weight=92 blockGap=10 speed.min=0 speed.max=255 color="#006400"
     export function CarCtrlSpeed(index: CarState, speed: number): void {
         CarCtrlSpeed2(index, speed, speed);
     }
 
-    //% blockId=Tinybit_CarCtrlSpeed2 block="CarCtrlSpeed2|%index|speed1 %speed1|speed2 %speed2"
+    //% block="car move %index with Left speed %speed1 Right speed %speed2"
+    //% tooltip="Advanced car movement with individual speed controls for turning."
     //% weight=91 blockGap=10 speed1.min=0 speed1.max=255 speed2.min=0 speed2.max=255 color="#006400"
     export function CarCtrlSpeed2(index: CarState, speed1: number, speed2: number): void {
         switch (index) {
@@ -247,7 +235,8 @@ namespace Tinybit {
         }
     }
 
-    //% blockId=Tinybit_Line_Sensor block="Line_Sensor|direct %direct|value %value"
+    //% block="%direct line sensor detects %value line"
+    //% tooltip="Returns true if the selected line sensor detects the chosen line color."
     //% weight=89 blockGap=10 color="#006400"
     export function Line_Sensor(direct: enPos, value: enLineState): boolean {
         if (!linePinsInitialized) {
@@ -255,21 +244,19 @@ namespace Tinybit {
             pins.setPull(DigitalPin.P14, PinPullMode.PullNone);
             linePinsInitialized = true;
         }
-
         const pin = (direct === enPos.LeftState) ? DigitalPin.P13 : DigitalPin.P14;
         return pins.digitalReadPin(pin) === value;
     }
 
-    //% blockId=Tinybit_Voice_Sensor block="Voice Sensor return"
-    //% weight=88 blockGap=10
+    //% block="sound sensor volume"
+    //% tooltip="Returns the current volume level picked up by the microphone (0-1023)."
+    //% weight=88 blockGap=10 color="#006400"
     export function Voice_Sensor(): number {
         return pins.analogReadPin(AnalogPin.P1);
     }
 
-    /**
-     * Fast, high-accuracy non-blocking single-ping Ultrasonic Distance Measurement in cm
-     */
-    //% blockId=Tinybit_Ultrasonic_Car block="ultrasonic return distance(cm)"
+    //% block="ultrasonic distance (cm)"
+    //% tooltip="Reads the distance to an obstacle in centimeters using the ultrasonic sensor."
     //% color="#006400" weight=87 blockGap=10
     export function Ultrasonic_Car(): number {
         pins.setPull(DigitalPin.P16, PinPullMode.PullNone);
@@ -279,16 +266,14 @@ namespace Tinybit {
         control.waitMicros(10);
         pins.digitalWritePin(DigitalPin.P16, 0);
 
-        // Limit timeout to 17400us (~300cm max range) to avoid blocking the MCU loop
         const duration = pins.pulseIn(DigitalPin.P15, PulseValue.High, 17400);
         if (duration === 0) return 0;
-
         return Math.floor(duration / 58);
     }
 
-    // Legacy V2 alias pointing to the optimized ultrasonic method
-    //% blockId=Tinybit_Ultrasonic_CarV2 block="ultrasonic for V2 return distance(cm)"
-    //% color="#006400" weight=87 blockGap=10
+    //% block="ultrasonic distance for V2 (cm)"
+    //% tooltip="Reads the distance to an obstacle for V2 boards."
+    //% color="#006400" weight=86 blockGap=10
     export function Ultrasonic_CarV2(): number {
         return Ultrasonic_Car();
     }
